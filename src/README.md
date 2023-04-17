@@ -24,7 +24,7 @@ while audio.get_busy():
 audio.unload()
 ```
 ### Convert .rgb to .avi (w/ audio)
-[FFmpeg](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
+[FFmpeg 6.0](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
 ```python
 import video
 video.rgb2avi(video_in, audio_in, video_out)
