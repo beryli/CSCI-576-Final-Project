@@ -13,12 +13,16 @@ backSub = cv2.createBackgroundSubtractorMOG2()
 prev_frame = None
 prev_gray = None
 
+last_shot = 0
+
 # Loop through the frames and display them
 while cap.isOpened():
     # Read the next frame
     ret, frame = cap.read()
     if not ret:
         break
+
+    frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES)
 
     blur = cv2.blur(frame, (5, 5))
     # print(cv2.mean(blur)[0], cv2.mean(blur)[1], cv2.mean(blur)[2])
@@ -27,8 +31,10 @@ while cap.isOpened():
         
         th = 15
         if cv2.mean(frame_diff)[0] > th and cv2.mean(frame_diff)[1] > th and cv2.mean(frame_diff)[2] > th:
-            print("scene change! at %s"%cap.get(cv2.CAP_PROP_POS_FRAMES)) 
-            print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
+            if frame_num - last_shot > 20:
+                print("scene change! at %s"%(frame_num)) 
+                print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
+            last_shot = frame_num
     # Display the frame
     cv2.imshow('Frame', frame)
     # Exit if the user presses the 'q' key
