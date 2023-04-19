@@ -32,7 +32,7 @@ while cap.isOpened():
 
     # Apply the background mask to the original image
     bgImg = cv2.bitwise_and(frame, frame, mask=bgMask)
-    # print(cv2.mean(bgImg)[0], cv2.mean(bgImg)[1], cv2.mean(bgImg)[2])
+
     if prev_bg is not None:
         frame_diff = cv2.absdiff(bgImg, prev_bg)
         
@@ -45,8 +45,9 @@ while cap.isOpened():
                 print("scene change! at %s" %(frame_num))
                 print("the ssim is: %.4f" %(simlarityIndex))
             last_shot = frame_num
+            
     # Display the frame
-    cv2.imshow('FG Mask', frame)
+    cv2.imshow('FG Mask', bgImg)
     # Exit if the user presses the 'q' key
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
