@@ -6,10 +6,13 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QStyle
-from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QAudioDeviceInfo, QAudio
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+
+# input_audio_deviceInfos = QAudioDeviceInfo.availableDevices(QAudio.AudioInput)
 
 class Ui_MainWindow(QMainWindow):
     def setupUi(self, MainWindow):
@@ -39,27 +42,27 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.pushButton = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout_2.addWidget(self.pushButton)
         self.pushButton_2 = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_2.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton_2.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton_2.setObjectName("pushButton_2")
         self.verticalLayout_2.addWidget(self.pushButton_2)
         self.pushButton_3 = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_3.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton_3.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton_3.setObjectName("pushButton_3")
         self.verticalLayout_2.addWidget(self.pushButton_3)
         self.pushButton_4 = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_4.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton_4.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton_4.setObjectName("pushButton_4")
         self.verticalLayout_2.addWidget(self.pushButton_4)
         self.pushButton_5 = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_5.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton_5.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton_5.setObjectName("pushButton_5")
         self.verticalLayout_2.addWidget(self.pushButton_5)
         self.pushButton_6 = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_6.setMinimumSize(QtCore.QSize(0, 300))
+        self.pushButton_6.setMinimumSize(QtCore.QSize(0, 90))
         self.pushButton_6.setObjectName("pushButton_6")
         self.verticalLayout_2.addWidget(self.pushButton_6)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
@@ -139,29 +142,73 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout.addLayout(self.horizontalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
 
-        # below is temporal code
+        """ Video """
         self.Play.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.Play.clicked.connect(self.play)
         self.Pause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.Pause.clicked.connect(self.pause)
         self.Stop.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-        # self.Stop.clicked.connect(self.play)
+        self.Stop.clicked.connect(self.stop)
         self.mediaPlayer.setVideoOutput(videoWidget)
-        self.mediaPlayer.setMedia(QMediaContent(QtCore.QUrl.fromLocalFile("./avi/file_example_AVI_480_750kB.avi")))
-        # above is temporal code
+        filename = "InputVideo.avi"
+        self.mediaPlayer.setMedia(QMediaContent(QtCore.QUrl.fromLocalFile(filename)))
+        """ Audio  """
+        filename = "InputAudio.mp3"
+        self.audioPlayer = QMediaPlayer()
+        self.audioPlayer.setMedia(QMediaContent(QtCore.QUrl.fromLocalFile(filename)))
+        self.is_stop = False
+        """ Table of Content """
+        self.pushButton.clicked.connect(lambda: self.jump(1))
+        self.pushButton_2.clicked.connect(lambda: self.jump(2))
+        self.pushButton_3.clicked.connect(lambda: self.jump(3))
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.mediaPlayer.pause()
+        self.audioPlayer.pause()
 
         
     def play(self):
-        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-            self.mediaPlayer.pause()
-        else:
+        if self.is_stop == True:
+            self.mediaPlayer.setPosition(0) # to start at the beginning of the video every time
+            self.audioPlayer.setPosition(0) # to start at the beginning of the video every time
+        self.is_stop = False
+
+        if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
+            self.audioPlayer.play()
             self.mediaPlayer.play()
+            # if self.audioPlayer.state() == QMediaPlayer.PlayingState:
+            print(self.mediaPlayer.position())
+            print(self.audioPlayer.position())
+            print()
+                
         
     def pause(self):
         self.mediaPlayer.pause()
+        self.audioPlayer.pause()
+    
+    def stop(self):
+        self.is_stop = True
+        self.mediaPlayer.pause()
+        self.audioPlayer.pause()
+
+
+    def jump(self, id):
+        if id == 1:
+            self.audioPlayer.setPosition(100000*3)
+            self.mediaPlayer.setPosition(100000)
+            self.pushButton.setStyleSheet("QPushButton{background-color: rgb(170, 170, 170); color: black;}")
+            self.pushButton_2.setStyleSheet("QPushButton{background-color: rgb(50, 50, 50);}")
+        if id == 2:
+            self.pushButton.setStyleSheet("QPushButton{background-color: rgb(50, 50, 50);}")
+            self.pushButton_2.setStyleSheet("QPushButton{background-color: rgb(170, 170, 170); color: black;}")
+            self.audioPlayer.setPosition(200000*3)
+            self.mediaPlayer.setPosition(200000)
+        if id == 3:
+            self.audioPlayer.setPosition(10000)
+            self.mediaPlayer.setPosition(10000)
+        self.mediaPlayer.pause()
+        self.audioPlayer.pause()
 
 
     def retranslateUi(self, MainWindow):
