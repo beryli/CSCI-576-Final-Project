@@ -36,7 +36,7 @@ while cap.isOpened():
     if prev_bg is not None:
         frame_diff = cv2.absdiff(bgImg, prev_bg)
         
-        th = 0.58
+        th = 0.6
          # 用scructural similarity來判斷前後兩個Frame的差異，藉以偵測shot change
         simlarityIndex = skimage.metrics.structural_similarity(bgImg, prev_bg, channel_axis = 2)
         frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES)

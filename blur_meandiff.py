@@ -24,7 +24,18 @@ while cap.isOpened():
 
     frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES)
 
-    blur = cv2.blur(frame, (5, 5))
+    # Convert the image from BGR to HSV
+    hsv_img = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Increase the saturation by a factor of 1.5
+    hsv_img[..., 1] = hsv_img[..., 1].astype(float) * 1.5
+
+    # Convert the image back to BGR
+    saturated_img = cv2.cvtColor(hsv_img.astype('uint8'), cv2.COLOR_HSV2BGR)
+
+    blur = cv2.blur(saturated_img, (5, 5))
+    
+
     # print(cv2.mean(blur)[0], cv2.mean(blur)[1], cv2.mean(blur)[2])
     if prev_frame is not None:
         frame_diff = cv2.absdiff(blur, prev_frame)
@@ -36,7 +47,7 @@ while cap.isOpened():
                 print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
             last_shot = frame_num
     # Display the frame
-    cv2.imshow('Frame', frame)
+    cv2.imshow('Frame', saturated_img)
     # Exit if the user presses the 'q' key
     if cv2.waitKey(10) & 0xFF == ord('q'):
         break
