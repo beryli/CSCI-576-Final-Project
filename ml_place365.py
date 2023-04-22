@@ -28,8 +28,15 @@ def classify_image(img):
     # forward pass
     logit = model.forward()
     inx = np.argmax(logit)
-    prob = np.max(logit)
-    print('{:.3f} -> {}'.format(prob, classes[inx]))
+    top_five = np.argsort(logit)[0][-5:]
+    print(top_five)
+    cv2.imshow("new shot", img)
+    # print(inx)
+    # prob = np.max(logit)
+    for i in range(len(top_five) - 1, -1, -1):
+        print('%d prob: %.3f, scene: %s' %(5-i, logit[0][top_five[i]], classes[top_five[i]]))
+    
+    return top_five
 
 
 
@@ -59,7 +66,7 @@ while cap.isOpened():
     blur = cv2.blur(frame, (5, 5))
     
     if prev_frame is not None:
-        frame_diff = cv2.absdiff(blur, prev_frame)
+        frame_diff = cv2.absdiff(frame, prev_frame)
         
         th = 15
         if cv2.mean(frame_diff)[0] > th and cv2.mean(frame_diff)[1] > th and cv2.mean(frame_diff)[2] > th:
@@ -74,7 +81,7 @@ while cap.isOpened():
     # Exit if the user presses the 'q' key
     if cv2.waitKey(10) & 0xFF == ord('q'):
         break
-    prev_frame = blur
+    prev_frame = frame
 
 # Release the video capture object and close the display window
 cap.release()
