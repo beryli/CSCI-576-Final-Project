@@ -1,12 +1,13 @@
-# This is an example of converting .rgb video file to .avi file
+# This is an example of converting .rgb video to .avi file and .wav audio to .mp3 file
 import sys
-import video
+import converter
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     print("Missing Arguments", file=sys.stderr)
     print("Sample Usage:", file=sys.stderr)
-    print("\t$ python %s <input-video> <input-audio> <output-video>" % (sys.argv[0]), file=sys.stderr)
+    print("\t$ python %s <input-video> <output-video> <input-audio> <output-audio>" % (sys.argv[0]), file=sys.stderr)
     sys.exit()
 
-[v_in, a_in, v_out] = sys.argv[1:4]
-video.rgb2avi(v_in, a_in, v_out)
+[v_in, v_out, a_in, a_out] = sys.argv[1:5]
+converter.rgb2avi(v_in, v_out)
+converter.wav2mp3(a_in, a_out)

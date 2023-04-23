@@ -23,9 +23,10 @@ while audio.get_busy():
 
 audio.unload()
 ```
-### Convert .rgb to .avi (w/ audio)
+### Convert .rgb to .avi (w/o audio) and .wav to .mp3
 [FFmpeg 6.0](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
 ```python
-import video
-video.rgb2avi(video_in, audio_in, video_out)
+import converter
+converter.rgb2avi(video_in, video_out)
+converter.wav2mp3(audio_in, audio_out)
 ```
