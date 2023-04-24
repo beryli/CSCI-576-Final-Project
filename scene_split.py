@@ -5,8 +5,6 @@ import cv2
 import numpy as np
 import math
 from split_algorithm import get_splits
-import matplotlib.pyplot as plt
-from kneed import KneeLocator
 
 def normalize_vector(vector):
     """Normalize a given vector to a unit vector."""
@@ -26,122 +24,104 @@ def euclidean_distance(vector1, vector2):
         distance += (vector1[i] - vector2[i]) ** 2
     return math.sqrt(distance)
 
-def find_split_points(arr, num_splits):
-    # Convert array to numpy array
-    arr = np.array(arr)
-    
-    # Compute the pairwise distances between vectors
-    dist_matrix = np.linalg.norm(arr[:, np.newaxis] - arr, axis=2)
-    
-    # Initialize the cost and split arrays
-    n = len(arr)
-    cost = np.full((n, num_splits+1), np.inf)
-    split = np.zeros((n, num_splits+1), dtype=int)
-    
-    # Compute the cost and split arrays using dynamic programming
-    cost[:,0] = 0
-    for k in range(1, num_splits+1):
-        for i in range(k-1, n):
-            for j in range(k-2, i):
-                new_cost = cost[j, k-1] + np.sum(dist_matrix[j+1:i+1, j+1:i+1])
-                if new_cost < cost[i,k]:
-                    cost[i,k] = new_cost
-                    split[i,k] = j+1
-    
-    # Backtrack through the split array to find the split points
-    split_points = []
-    i = n-1
-    for k in range(num_splits, 0, -1):
-        split_points.append(split[i,k])
-        i = split[i,k]-1
-    split_points.reverse()
-    
-    return split_points
-
-
 # Load the video file
 cap = cv2.VideoCapture('InputVideo.mp4')
 
-backSub = cv2.createBackgroundSubtractorMOG2()
+total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+sample_rate = int(total_frame * 3e-3)
 
 prev_frame = None
-prev_gray = None
-counter = 0
 last_shot = 0
 
-last_ten_frames = []
-shot_frames_v = []
 shot_frame_index = []
+frames = [[],[]]
+
+# Get the number of frames in the video
+num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 # Loop through the frames and display them
-while cap.isOpened():
-    counter += 1
+for i in range(num_frames):
     # Read the next frame
     ret, frame = cap.read()
     if not ret:
         break
 
     frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES);
-    
 
     if prev_frame is not None:
 
         (means, stds) = cv2.meanStdDev(frame)
         frame_v = np.concatenate([means, stds]).flatten()
+
+        if frame_num % sample_rate == 0:
+            frames[0].append(frame_v)
+            frames[1].append(frame_num)
+
+    
         frame_hist = cv2.calcHist([frame], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         frame_hist = frame_hist.flatten()
         (means_prev, stds_prev) = cv2.meanStdDev(prev_frame)
         prev_frame_v = np.concatenate([means_prev, stds_prev]).flatten()
         prev_frame_hist = cv2.calcHist([prev_frame], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         prev_frame_hist = prev_frame_hist.flatten()
-        cos_sim = cosine_similarity(frame_v, prev_frame_v)
-        e_dist = euclidean_distance(frame_v, prev_frame_v)
-        if e_dist > 20:
-            if frame_num - last_shot > 20:
-                shot_frames_v.append((frame_v))
+        cos_sim = cosine_similarity(frame_hist, prev_frame_hist)
+        e_dist_hist = euclidean_distance(frame_hist, prev_frame_hist)
+        e_dist_v = euclidean_distance(frame_v, prev_frame_v)
+
+        if ((e_dist_hist > 10000 and e_dist_v >= 10) or e_dist_v > 20):
+            if frame_num - last_shot > 10:
                 shot_frame_index.append(frame_num)
-                print("shot change dectected, the euclidean_distance is %.4f, and the frame index is %f" %(e_dist, frame_num))
-                print(frame_v)
+                print("shot change dectected, the euclidean_distance is (%.4f, %4f), and the frame index is %f" %(e_dist_hist, e_dist_v, frame_num))
             last_shot = frame_num
-        # if cos_sim <= 0.999:
-        #     print("shot change dectected, the cosine similarity is %.4f" %(cos_sim))
-        # print(frame_v)
-    # Display the frame
-    cv2.imshow('FG Mask', frame)
-    # Exit if the user presses the 'q' key
-    if cv2.waitKey(10) & 0xFF == ord('q'):
-        break
     prev_frame = frame
 
-# Release the video capture object and close the display window
-cap.release()
-cv2.destroyAllWindows()
 errors = []
 choices = dict()
 
-print(shot_frames_v)
 
-for i in range(2, len(shot_frames_v)-1):
-    split_points = get_splits(shot_frames_v, i)
-    errors.append(split_points[1])
-    print("using %d scene, the total error is: %.4f" %(i, split_points[1]))
-    print("the split scenes are:")
-    split_scenes = []
-    for p in split_points[0]:
-        if p != 0:
-            split_scenes.append(shot_frame_index[p])
-            print(shot_frame_index[p])
-    choices[i] = split_scenes
-    print("---------\n")
+split_num = int(len(shot_frame_index)-1)
+split_points = get_splits(frames[0], split_num)
+scenes = [(frames[1][x]) for x in split_points[0]]
+print("The scenes are:, ", scenes)
 
-indices = range(2, len(shot_frames_v)-1)
+for i in range(len(scenes)):
+    for j in range(len(shot_frame_index)):
+        if shot_frame_index[j] < scenes[i]:
+            if j == len(shot_frame_index) - 1:
+                scenes[i] = shot_frame_index[j]
+            elif shot_frame_index[j + 1] > scenes[i]:
+                if (shot_frame_index[j + 1] - scenes[i]) > 200 and (scenes[i] - shot_frame_index[j]) > 200:
+                    break
+                if scenes[i] - shot_frame_index[j] <= shot_frame_index[j + 1] - scenes[i]:
+                    scenes[i] = shot_frame_index[j]
+                else:
+                    scenes[i] = shot_frame_index[j + 1]
+print("After assign scene to shot, the scenes are:, ", scenes)
+# Reset the video capture to the beginning of the video
+cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-kl = KneeLocator(indices, errors, curve='convex', direction='decreasing')
-print(f"Optimal number of clusters based on elbow method: {kl.elbow}")
-print("the best scene splits are", choices[int(kl.elbow)])
-plt.plot(indices, errors)
-plt.xlabel('Index')
-plt.ylabel('Number')
-plt.title('List of Numbers:')
-plt.show()
+while True:
+    # Read the next frame
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+
+    frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES);
+    
+    for s in scenes:
+        if frame_num == s:
+            print("scene change")
+
+    for s in shot_frame_index:
+        if frame_num == s:
+            print("shot change change at %f"%(frame_num))
+
+    
+    cv2.imshow('Video', frame)
+    # Exit if the user presses the 'q' key
+    if cv2.waitKey(10) & 0xFF == ord('q'):
+        break
+cap.release()
+cv2.destroyAllWindows()
