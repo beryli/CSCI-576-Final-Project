@@ -1,34 +1,31 @@
-# csci-576-final-project
-## You need to set up the virtual environment(if you haven't):
-```
-python -m venv venv
-```
+# CSCI-576 Final Project
+This is an integration branch for GUI and video analyzer. All codes must be integrated in this branch before merging into the main branch.
 
-## activate the virtual environment:
-  * **Linux and MacOS venv activation**
-  ```
-  source venv/bin/activate
-  ```
-  * **Windows venv activation**
-  ```
-  .\venv\Scripts\activate
-  ```
+## Prerequisites
+### FFmpeg 6.0
+[FFmpeg 6.0](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
 
-## install packages
-* **To install**:
-```
-pip install -r requirements.txt
-```
-## freeze environment
-* If you install any new packages, you need to freeze the new environment into requirement.txt
-* **To freeze**:
-```
-pip freeze -l > requirements.txt 
+### Virtual Environment
+Create a virual environment:
+```sh
+$ python -m venv venv
+$ source
 ```
 
-## download model
-* Before using place365 pretrained model, download from there:
-  http://places2.csail.mit.edu/models_places365/resnet152_places365.caffemodel
+Activate the virtual environment:
+- **Linux and MacOS**
+```sh
+source venv/bin/activate
+```
+- **Windows**
+```sh
+.\venv\Scripts\activate
+```
 
+Install packages:
+```sh
+$ python -m pip install -r requirements.txt
+```
 
-
+## Usage
+Please view [src/main.py](src/main.py) for details.
