@@ -1,4 +1,4 @@
-# Use bitwise OR to determine the frame type
+# Use bitwise-AND to determine the frame type
 # For example, if (val & Frametype.SCENE) is true, then `val` has a SCENE property.
 # A single frame can have multiple properties at the same time.
 # Take val = 7 for example, this frame is a SCENE, a SHOT, and a SUBSHOT at the same time,
