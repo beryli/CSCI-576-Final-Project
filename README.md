@@ -9,7 +9,6 @@ This is an integration branch for GUI and video analyzer. All codes must be inte
 Create a virual environment:
 ```sh
 $ python -m venv venv
-$ source
 ```
 
 Activate the virtual environment:
