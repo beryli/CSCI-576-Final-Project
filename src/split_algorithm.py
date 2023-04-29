@@ -64,7 +64,7 @@ def get_splits(arr, split_num, plot=False):
 
     # backtrack
     i = len(arr) - 1
-    split_points = []
+    split_points = [0]
     for k in range(elbow_point, 0, -1):
         split_points.append(splits[k][i])
         i = splits[k][i] - 1
