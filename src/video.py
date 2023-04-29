@@ -1,4 +1,5 @@
 # 實驗先把background分離出來之後，比較前後兩個frame的mean difference
+import sys
 import cv2
 import numpy as np
 import math
@@ -58,47 +59,52 @@ def analyze_video(filename, plot=False):
 
     sample_rate = max(int(total_frame * 2e-3), 1)
 
-    prev_frame = None
-    last_shot = 0
-
-    shot_frame_index = []
-    frames = [[],[]]
-
     # Get the number of frames in the video
     num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    ret, frame = cap.read()
+    if not ret:
+        sys.exit()
+
+    prev_frame = 0
+    last_shot = 0
+    shot_frame_index = [0]
+
+    (means, stds) = cv2.meanStdDev(frame)
+    frame_v = np.concatenate([means, stds]).flatten()
+    frames = [[],[]]
+    frames[0].append(frame_v)
+    frames[1].append(0)
+
 
     # Loop through the frames and display them
-    for i in range(num_frames):
+    for i in range(1, num_frames):
         # Read the next frame
         ret, frame = cap.read()
         if not ret:
             break
 
-
         frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES);
 
-        if prev_frame is not None:
+        frame_diff = cv2.absdiff(frame, prev_frame)
 
-            frame_diff = cv2.absdiff(frame, prev_frame)
-            
-            th = 15
+        th = 15
 
-            if cv2.mean(frame_diff)[0] > th and cv2.mean(frame_diff)[1] > th and cv2.mean(frame_diff)[2] > th:
-                if frame_num - last_shot > 20:
-                    shot_frame_index.append(frame_num)
-                    print("scene change! at %s"%(frame_num)) 
-                    print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
-                last_shot = frame_num
+        if cv2.mean(frame_diff)[0] > th and cv2.mean(frame_diff)[1] > th and cv2.mean(frame_diff)[2] > th:
+            if frame_num - last_shot > 20:
+                shot_frame_index.append(frame_num)
+                # print("scene change! at %s"%(frame_num))
+                # print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
+            last_shot = frame_num
 
-            (means, stds) = cv2.meanStdDev(frame)
-            frame_v = np.concatenate([means, stds]).flatten()
+        (means, stds) = cv2.meanStdDev(frame)
+        frame_v = np.concatenate([means, stds]).flatten()
 
-            if frame_num % sample_rate == 0:
-                frames[0].append(frame_v)
-                frames[1].append(frame_num)
+        if frame_num % sample_rate == 0:
+            frames[0].append(frame_v)
+            frames[1].append(frame_num)
 
         prev_frame = frame
-            
+
 
     errors = []
     choices = dict()
