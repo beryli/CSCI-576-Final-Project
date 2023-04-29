@@ -2,8 +2,8 @@
 import cv2
 import numpy as np
 import math
-from split_algorithm import get_splits
-from frame import Frametype
+from .split_algorithm import get_splits
+from .frame import Frametype
 
 # Analyzes the input video @filename, plot a cluster chart if @plot flag is true,
 # and returns a tuple list of frame IDs and frame types

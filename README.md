@@ -1,5 +1,24 @@
+- [CSCI-576 Final Project](#csci-576-final-project)
+  - [Usage with UI](#usage-with-ui)
+  - [Prerequisites](#prerequisites)
+    - [FFmpeg 6.0](#ffmpeg-60)
+    - [Virtual Environment](#virtual-environment)
+  - [Usage](#usage)
+
+
 # CSCI-576 Final Project
 This is an integration branch for GUI and video analyzer. All codes must be integrated in this branch before merging into the main branch.
+
+## Usage with UI
+-  Go to the directory of InputVideo.rgb and InputAudio.wav (and output.avi and output.mp3). 
+```
+cd data-directory 
+```
+- Run code
+```
+python code-directory\main.py -vi InputVideo.rgb -ai InputAudio.wav
+```
+
 
 ## Prerequisites
 ### FFmpeg 6.0
