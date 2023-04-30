@@ -25,7 +25,7 @@ from .frame import Frametype
 #
 #       For example, if `frame-type-1 & Frame.SHOT` is not zero, then `frame-type-1`
 #       is a shot. Note that a single frame can have multiple properties at the same time.
-def analyze_video(filename, plot=False):
+def analyze_video(filename, subdiv_x=4, subdiv_y=4, plot=False):
     def merge_frame_types(scene_ids, shot_ids, subshot_ids):
         d = dict()
         for id in [int(x) for x in shot_ids]:
@@ -50,7 +50,53 @@ def analyze_video(filename, plot=False):
         frames.sort(key=lambda x: x[0])
 
         return frames
+    
+    """
+    Divides @frame and @prev_frame into blocks (subdivisions) and calculates the mean of difference of each channel in a block
+    Counts the number of blocks where the means of differences of a channel >= @th_subdiv
+    If the proportion of the changed blocks >= @th, then @frame is a subshot (returns True)
+    """
+    def is_subshot(frame, prev_frame, subdiv_x=8, subdiv_y=8, th=0.4, th_subdiv=10, th_must_change=15, blur=False, ksize=(5, 5)):
+        w, h, channels = len(frame), len(frame[0]), len(frame[0][0])
+        subdiv_w = (w + subdiv_x - 1) // subdiv_x
+        subdiv_h = (h + subdiv_y - 1) // subdiv_y
 
+        _frame_diff = None
+        if blur:
+            frame_blurred = cv2.blur(frame, ksize)
+            prev_frame_blurred = cv2.blur(prev_frame, ksize)
+            _frame_diff = cv2.absdiff(frame_blurred, prev_frame_blurred)
+        else:
+            _frame_diff = cv2.absdiff(frame, prev_frame)
+
+        # Padding with 0-s
+        padded_w, padded_h = subdiv_w * subdiv_x, subdiv_h * subdiv_y
+        frame_diff = np.zeros((padded_w, padded_h, channels))
+        frame_diff[:w,:h,:] = _frame_diff
+        max_diff = 0.0
+
+        block_change_count = 0
+        for i in range(subdiv_x):
+            for j in range(subdiv_y):
+                x_begin, y_begin = subdiv_w * i, subdiv_h * j
+                x_end, y_end = x_begin + subdiv_w, y_begin + subdiv_h
+                block = frame_diff[x_begin:x_end, y_begin:y_end]
+
+                means = cv2.mean(block)
+                if means[0] > th_subdiv or means[1] > th_subdiv or means[2] > th_subdiv:
+                    max_diff = max(max_diff, means[0], means[1], means[2])
+                    block_change_count += 1
+
+        total_blocks = subdiv_x * subdiv_y
+        diff_ratio = block_change_count / total_blocks
+
+        # if diff_ratio >= th:
+            # print('diff_ratio %f' % diff_ratio)
+
+        # if max_diff > 1.0:
+            # print('frame %d: max diff %f\n' % (frameid, max_diff))
+
+        return True if diff_ratio >= th or max_diff > th_must_change else False
 
     # Load the video file
     cap = cv2.VideoCapture(filename)
@@ -64,6 +110,10 @@ def analyze_video(filename, plot=False):
     ret, frame = cap.read()
     if not ret:
         sys.exit()
+    
+    frame_h = frame.shape[0]
+    frame_w = frame.shape[1]
+    channels = frame.shape[2]
 
     prev_frame = 0
     last_shot = 0
@@ -75,6 +125,12 @@ def analyze_video(filename, plot=False):
     frames[0].append(frame_v)
     frames[1].append(0)
 
+    subshot_frame_index = [0]
+    last_subshot = 0
+    subshot_min_len = 20
+    
+    bufsize = 4
+    frame_buf = np.empty((bufsize, frame_h, frame_w, channels))
 
     # Loop through the frames and display them
     for i in range(1, num_frames):
@@ -83,7 +139,8 @@ def analyze_video(filename, plot=False):
         if not ret:
             break
 
-        frame_num = cap.get(cv2.CAP_PROP_POS_FRAMES);
+        frame_num = int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1
+        # print('frame %d' % frame_num)
 
         frame_diff = cv2.absdiff(frame, prev_frame)
 
@@ -91,7 +148,18 @@ def analyze_video(filename, plot=False):
 
         if cv2.mean(frame_diff)[0] > th and cv2.mean(frame_diff)[1] > th and cv2.mean(frame_diff)[2] > th:
             if frame_num - last_shot > 20:
+                subshot_count = 0
+                j = len(subshot_frame_index) - 1
+                while j >= 0 and subshot_frame_index[j] >= shot_frame_index[-1]:
+                    subshot_count += 1
+                    j -= 1
+
+                # Deletes subshot if there is only one within a shot
+                if subshot_count == 1:
+                    subshot_frame_index.pop()
+                
                 shot_frame_index.append(frame_num)
+                print('shot: %d' % frame_num)
                 # print("scene change! at %s"%(frame_num))
                 # print("mean diff in each channel are: R: %.1f G: %.1f B: %.1f" %(cv2.mean(frame_diff)[2], cv2.mean(frame_diff)[1], cv2.mean(frame_diff)[0]))
             last_shot = frame_num
@@ -102,6 +170,25 @@ def analyze_video(filename, plot=False):
         if frame_num % sample_rate == 0:
             frames[0].append(frame_v)
             frames[1].append(frame_num)
+
+        curr_buf_idx = frame_num % bufsize
+        frame_buf[curr_buf_idx] = frame
+
+        if frame_num >= bufsize:
+            prev_buf_idx = (frame_num - (bufsize - 1)) % bufsize
+            if is_subshot(frame_buf[curr_buf_idx], frame_buf[prev_buf_idx], subdiv_x=subdiv_x, subdiv_y=subdiv_y, th=0.5, th_subdiv=10, th_must_change=15, blur=True, ksize=(9,9)):
+                if frame_num - last_subshot >= subshot_min_len:
+                    if last_subshot < shot_frame_index[-1]:
+                        subshot_frame_index.append(shot_frame_index[-1])
+                        print(" |-- subshot: %d" % subshot_frame_index[-1])
+                        if frame_num - shot_frame_index[-1] >= subshot_min_len:
+                            subshot_frame_index.append(frame_num)
+                            print(" |-- subshot: %d" % subshot_frame_index[-1])
+                    else:
+                        subshot_frame_index.append(frame_num)
+                        print(" |-- subshot: %d" % subshot_frame_index[-1])
+
+                    last_subshot = subshot_frame_index[-1]
 
         prev_frame = frame
 
