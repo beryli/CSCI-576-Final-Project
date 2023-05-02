@@ -1,8 +1,11 @@
+import sys
 import argparse
-from converter import rgb2avi, wav2mp3
-from video import analyze_video
+from PyQt5 import QtCore, QtGui, QtWidgets
+from src.converter import rgb2avi, wav2mp3
+from src.Ui_multimedia_player import Ui_MainWindow
+from src.video import analyze_video
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-vi', '--input-video',
                         required=True, help='input video filename (.rgb)', dest='v_in')
@@ -37,5 +40,9 @@ if __name__ == '__main__':
 
     frames = analyze_video(video_target)
 
-    print("[Frames]")
-    print(frames)
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow, video_target, audio_target, frames)
+    MainWindow.show()
+    sys.exit(app.exec_())
