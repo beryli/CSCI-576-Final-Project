@@ -27,25 +27,15 @@ from .frame import Frametype
 #       is a shot. Note that a single frame can have multiple properties at the same time.
 def analyze_video(filename, subdiv_x=6, subdiv_y=6, plot=False):
     def merge_frame_types(scene_ids, shot_ids, subshot_ids):
-        d = dict()
-        for id in [int(x) for x in shot_ids]:
-            d[id] = Frametype.SHOT
-
+        frames = []
         for id in [int(x) for x in scene_ids]:
-            if id not in d:
-                d[id] = Frametype.SCENE
-            else:
-                d[id] |= Frametype.SCENE
+            frames.append((id, Frametype.SCENE))
+
+        for id in [int(x) for x in shot_ids]:
+            frames.append((id, Frametype.SHOT))
 
         for id in [int(x) for x in subshot_ids]:
-            if id not in d:
-                d[id] = Frametype.SUBSHOT
-            else:
-                d[id] |= Frametype.SUBSHOT
-
-        frames = []
-        for key, value in d.items():
-            frames.append([key, value])
+            frames.append((id, Frametype.SUBSHOT))
 
         frames.sort(key=lambda x: x[0])
 
