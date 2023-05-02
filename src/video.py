@@ -57,34 +57,32 @@ def analyze_video(filename, subdiv_x=4, subdiv_y=4, plot=False):
     If the proportion of the changed blocks >= @th, then @frame is a subshot (returns True)
     """
     def is_subshot(frame, prev_frame, subdiv_x=8, subdiv_y=8, th=0.4, th_subdiv=10, th_must_change=15, blur=False, ksize=(5, 5)):
-        w, h, channels = len(frame), len(frame[0]), len(frame[0][0])
+        h, w, channels = frame.shape[0], frame.shape[1], frame.shape[2]
         subdiv_w = (w + subdiv_x - 1) // subdiv_x
         subdiv_h = (h + subdiv_y - 1) // subdiv_y
 
-        _frame_diff = None
-        if blur:
-            frame_blurred = cv2.blur(frame, ksize)
-            prev_frame_blurred = cv2.blur(prev_frame, ksize)
-            _frame_diff = cv2.absdiff(frame_blurred, prev_frame_blurred)
-        else:
-            _frame_diff = cv2.absdiff(frame, prev_frame)
-
         # Padding with 0-s
         padded_w, padded_h = subdiv_w * subdiv_x, subdiv_h * subdiv_y
-        frame_diff = np.zeros((padded_w, padded_h, channels))
-        frame_diff[:w,:h,:] = _frame_diff
-        max_diff = 0.0
+        frame_padded = np.zeros(shape=(padded_h, padded_w, channels))
+        prev_frame_padded = np.zeros(shape=(padded_h, padded_w, channels))
+        frame_padded[:h,:w,:] = cv2.blur(frame, ksize) if blur else frame
+        prev_frame_padded[:h,:w,:] = cv2.blur(prev_frame, ksize) if blur else prev_frame
 
+        max_diff = 0.0
         block_change_count = 0
         for i in range(subdiv_x):
             for j in range(subdiv_y):
                 x_begin, y_begin = subdiv_w * i, subdiv_h * j
                 x_end, y_end = x_begin + subdiv_w, y_begin + subdiv_h
-                block = frame_diff[x_begin:x_end, y_begin:y_end]
+                block = frame_padded[y_begin:y_end, x_begin:x_end]
+                prev_block = prev_frame_padded[y_begin:y_end, x_begin:x_end]
 
                 means = cv2.mean(block)
-                if means[0] > th_subdiv or means[1] > th_subdiv or means[2] > th_subdiv:
-                    max_diff = max(max_diff, means[0], means[1], means[2])
+                prev_means = cv2.mean(prev_block)
+
+                frame_diff = cv2.absdiff(means, prev_means)
+                if frame_diff[0] > th_subdiv or frame_diff[1] > th_subdiv or frame_diff[2] > th_subdiv:
+                    max_diff = max(max_diff, frame_diff[0], frame_diff[1], frame_diff[2])
                     block_change_count += 1
 
         total_blocks = subdiv_x * subdiv_y
