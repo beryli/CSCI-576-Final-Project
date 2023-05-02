@@ -174,7 +174,7 @@ def analyze_video(filename, subdiv_x=4, subdiv_y=4, plot=False):
 
         if frame_num >= bufsize:
             prev_buf_idx = (frame_num - (bufsize - 1)) % bufsize
-            if is_subshot(frame_buf[curr_buf_idx], frame_buf[prev_buf_idx], subdiv_x=subdiv_x, subdiv_y=subdiv_y, th=0.5, th_subdiv=10, th_must_change=15, blur=True, ksize=(9,9)):
+            if is_subshot(frame_buf[curr_buf_idx], frame_buf[prev_buf_idx], subdiv_x=subdiv_x, subdiv_y=subdiv_y, th=0.5, th_subdiv=10, th_must_change=15):
                 if frame_num - last_subshot >= subshot_min_len:
                     if last_subshot < shot_frame_index[-1]:
                         subshot_frame_index.append(shot_frame_index[-1])
