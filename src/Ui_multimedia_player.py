@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 import time
+import math
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QStyle
@@ -19,14 +20,16 @@ class Ui_MainWindow(QMainWindow):
     def setupUi(self, MainWindow, video, audio, frames):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1000, 600)
+        MainWindow.setFixedSize(1000, 600)
         MainWindow.setStyleSheet("background-color: rgb(65, 65, 65);color: rgb(255, 255, 255)")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.content = QtWidgets.QWidget(self.centralwidget)
         self.content.setGeometry(QtCore.QRect(0, 0, 400, 600))
         self.content.setObjectName("content")
+        self.content.setStyleSheet("background-color: rgb(111, 111, 111);color: rgb(255, 255, 255)")
         self.scrollArea = QtWidgets.QScrollArea(self.content)
-        self.scrollArea.setGeometry(QtCore.QRect(30, 50, 361, 500))
+        self.scrollArea.setGeometry(QtCore.QRect(0, 0, 400, 600))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -74,12 +77,12 @@ class Ui_MainWindow(QMainWindow):
         self.Play.setEnabled(True)
         font = QtGui.QFont()
         font.setFamily("Arial")
-        font.setPointSize(12)
+        font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
         self.Play.setFont(font)
         self.Play.setStyleSheet("QPushButton{\n"
-"border: 1px solid rgb(50, 50, 50); border-radius:10px; padding:2px 4px;\n"
+"border: 1px solid rgb(50, 50, 50); border-radius:15px; padding:2px 4px;\n"
 "background-color: rgb(50, 50, 50);\n"
 "}\n"
 "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
@@ -89,12 +92,12 @@ class Ui_MainWindow(QMainWindow):
         self.Pause = QtWidgets.QPushButton(self.widget)
         font = QtGui.QFont()
         font.setFamily("Arial")
-        font.setPointSize(12)
+        font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
         self.Pause.setFont(font)
         self.Pause.setStyleSheet("QPushButton{\n"
-"border: 1px solid rgb(50, 50, 50); border-radius:10px; padding:2px 4px;\n"
+"border: 1px solid rgb(50, 50, 50); border-radius:15px; padding:2px 4px;\n"
 "background-color: rgb(50, 50, 50);\n"
 "}\n"
 "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
@@ -104,12 +107,12 @@ class Ui_MainWindow(QMainWindow):
         self.Stop = QtWidgets.QPushButton(self.widget)
         font = QtGui.QFont()
         font.setFamily("Arial")
-        font.setPointSize(12)
+        font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
         self.Stop.setFont(font)
         self.Stop.setStyleSheet("QPushButton{\n"
-"border: 1px solid rgb(50, 50, 50); border-radius:10px; padding:2px 4px;\n"
+"border: 1px solid rgb(50, 50, 50); border-radius:15px; padding:2px 4px;\n"
 "background-color: rgb(50, 50, 50);\n"
 "}\n"
 "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
@@ -120,11 +123,11 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setCentralWidget(self.centralwidget)
 
         """ Video """
-        self.Play.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        # self.Play.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.Play.clicked.connect(self.play)
-        self.Pause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+        # self.Pause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.Pause.clicked.connect(self.pause)
-        self.Stop.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+        # self.Stop.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
         self.Stop.clicked.connect(self.stop)
         self.mediaPlayer.setVideoOutput(videoWidget)
         # filename = "InputVideo.avi"
@@ -140,28 +143,52 @@ class Ui_MainWindow(QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.highlight(0)
+        self.mediaPlayer.setPosition(0)
+        self.audioPlayer.setPosition(0)
         self.mediaPlayer.pause()
         self.audioPlayer.pause()
 
 
     def createTableContent(self, frames):
         self.mediaPlayer.positionChanged.connect(self.positionChanged)
+        self.mediaPlayer.setNotifyInterval(500)
         self.pushButton = [None] * len(frames)
         for i in range(len(frames)):
             self.pushButton[i] = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
             self.pushButton[i].setMinimumSize(QtCore.QSize(0, 50))
+            second = str(int((self.frames[i][0] / 30) % 60))
+            minute = str(int((self.frames[i][0] / 30) / 60))
+            time = minute.zfill(2) + " : " + second.zfill(2)
             if frames[i][1] >= 4 : 
                 self.pushButton[i].setObjectName("Scene")
-                self.pushButton[i].setText("Scene")
+                str1 = ' {:<12} {:<} '.format('Scene', time)
+                self.pushButton[i].setText(str1)
             elif frames[i][1] % 2 == 1 : 
                 self.pushButton[i].setObjectName("Subshot")
-                self.pushButton[i].setText("Subshot")
+                str1 = ' {:<12} {:<} '.format('    Subshot', time)
+                self.pushButton[i].setText(str1)
             else: 
                 self.pushButton[i].setObjectName("Shot")
-                self.pushButton[i].setText("Shot")
+                str1 = ' {:<12} {:<} '.format('  Shot', time)
+                self.pushButton[i].setText(str1)
             self.verticalLayout_2.addWidget(self.pushButton[i])
             # self.pushButton[i].clicked.connect(lambda: self.jump(i))
             self.pushButton[i].clicked.connect(partial(self.jump,i))
+
+            
+            self.pushButton[i].setStyleSheet("QPushButton{\n"
+                "border: 0px solid rgb(50, 50, 50); border-radius:0px; padding:0px 0px;\n"
+                "background-color: rgb(111, 111, 111);\n"
+                "}\n"
+                "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
+                "QPushButton:pressed{background-color:rgb(200, 200, 200); border-style: inset; }")
+            font = QtGui.QFont()
+            font.setFamily("Courier")
+            font.setPointSize(20)
+            font.setBold(True)
+            font.setWeight(75)
+            self.pushButton[i].setFont(font)
         # self.pushButton = QtWidgets.QPushButton(self.scrollAreaWidgetContents)
         # self.pushButton.setMinimumSize(QtCore.QSize(0, 90))
         # self.pushButton.setObjectName("pushButton")
@@ -176,11 +203,38 @@ class Ui_MainWindow(QMainWindow):
         # self.pushButton[2].clicked.connect(lambda: self.jump(3))
 
     def positionChanged(self, position):
-        print(position)
+        # print("Position:   " + str(position))
+        if position < (self.frames[0][0] * 1000 / 30):
+            self.highlight(0)
+        elif position >= (self.frames[len(self.frames)-1][0] * 1000 / 30):
+            self.highlight(len(self.frames)-1)
+        else:
+            for i in range(1, len(self.frames)-1):
+                if position >= (self.frames[i][0] * 1000 / 30) and position < math.floor((self.frames[i+1][0] * 1000 / 30)):
+                    # print("Position: " + str(position) + "  i: " + str((self.frames[i][0] * 1000 / 30))+ "  i+1: " + str((self.frames[i+1][0] * 1000 / 30)))
+                    self.highlight(i)
+                    break
+        
+    def highlight(self, id):
+        # print("hightlight: " + str(id))
+        for i in range(len(self.frames)):
+            self.pushButton[i].setStyleSheet("QPushButton{\n"
+                "border: 0px solid rgb(50, 50, 50); border-radius:0px; padding:0px 0px;\n"
+                "background-color: rgb(111, 111, 111);\n"
+                "}\n"
+                "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
+                "QPushButton:pressed{background-color:rgb(200, 200, 200); border-style: inset; }")
+        self.pushButton[id].setStyleSheet("QPushButton{\n"
+                "border: 0px solid rgb(50, 50, 50); border-radius:0px; padding:0px 0px;\n"
+                "background-color: rgb(170, 170, 170);\n"
+                "}\n"
+                "QPushButton:hover{background-color: rgb(170, 170, 170); color: black;}\n"
+                "QPushButton:pressed{background-color:rgb(200, 200, 200); border-style: inset; }")
         
         
     def play(self):
         if self.is_stop == True:
+            self.highlight(0)
             self.mediaPlayer.setPosition(0) # to start at the beginning of the video every time
             self.audioPlayer.setPosition(0) # to start at the beginning of the video every time
         self.is_stop = False
@@ -189,9 +243,9 @@ class Ui_MainWindow(QMainWindow):
             self.audioPlayer.play()
             self.mediaPlayer.play()
             # if self.audioPlayer.state() == QMediaPlayer.PlayingState:
-            print(self.mediaPlayer.position())
-            print(self.audioPlayer.position())
-            print()
+            # print(self.mediaPlayer.position())
+            # print(self.audioPlayer.position())
+            print("Player Position: " + str(self.mediaPlayer.position()) + "/" + str(self.audioPlayer.position()) + " (video/audio)")
                 
         
     def pause(self):
@@ -205,9 +259,11 @@ class Ui_MainWindow(QMainWindow):
 
 
     def jump(self, id):
-        print(id)
+        self.mediaPlayer.pause()
+        self.audioPlayer.pause()
         self.audioPlayer.setPosition(self.frames[id][0] * 1000 / 30)
         self.mediaPlayer.setPosition(self.frames[id][0] * 1000 / 30)
+        self.highlight(id)
         # if id == 1:
         #     self.audioPlayer.setPosition(100000*3)
         #     self.mediaPlayer.setPosition(100000)
@@ -221,8 +277,6 @@ class Ui_MainWindow(QMainWindow):
         # if id == 3:
         #     self.audioPlayer.setPosition(10000)
         #     self.mediaPlayer.setPosition(10000)
-        self.mediaPlayer.pause()
-        self.audioPlayer.pause()
 
 
     def retranslateUi(self, MainWindow):
