@@ -1,5 +1,5 @@
 import argparse
-import converter
+from converter import rgb2avi, wav2mp3
 from video import analyze_video
 
 if __name__ == '__main__':
@@ -24,12 +24,18 @@ if __name__ == '__main__':
     video_conversion_enabled = not args.no_video_conversion
     audio_conversion_enabled = not args.no_audio_conversion
 
+    video_target = args.v_in
+    audio_target = args.a_in
+
     if conversion_enabled:
         if video_conversion_enabled:
-            converter.rgb2avi(args.v_in, args.v_out)
+            rgb2avi(args.v_in, args.v_out)
+            video_target = args.v_out
         if audio_conversion_enabled:
-            converter.wav2mp3(args.a_in, args.a_out)
-    
-    frames = analyze_video(args.v_out)
+            wav2mp3(args.a_in, args.a_out)
+            audio_target = args.a_out
+
+    frames = analyze_video(video_target)
+
     print("[Frames]")
     print(frames)
