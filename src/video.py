@@ -216,6 +216,6 @@ def analyze_video(filename, subdiv_x=4, subdiv_y=4, plot=False):
     cap.release()
     cv2.destroyAllWindows()
 
-    frames = merge_frame_types(scenes, shot_frame_index, [])
+    frames = merge_frame_types(scenes, shot_frame_index, subshot_frame_index)
 
     return frames
