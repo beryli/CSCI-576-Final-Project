@@ -216,6 +216,8 @@ class Ui_MainWindow(QMainWindow):
                     break
         
     def highlight(self, id):
+        while id > 0 and self.frames[id][1] % 2 == 1 : 
+            id = id - 1
         # print("hightlight: " + str(id))
         for i in range(len(self.frames)):
             self.pushButton[i].setStyleSheet("QPushButton{\n"
