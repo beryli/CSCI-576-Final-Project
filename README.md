@@ -49,6 +49,6 @@ $ python -m pip install -r requirements.txt
 Please view [src/main.py](src/main.py) for details.
 
 ```sh
-$ python main.py -vi <input-video> [-vo <output-video] \
+$ python main.py -vi <input-video> [-vo <output-video>] \
                  -ai <input-audio> [-ao <output-audio>]
 ```
