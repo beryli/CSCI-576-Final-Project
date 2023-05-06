@@ -31,7 +31,7 @@ if __name__ == "__main__":
         rgb2avi(args.v_in, video_target)
     if args.v_out or a_ext != '.mp3':
         audio_target = args.a_out if args.a_out else a_name + '.mp3'
-        wav2mp3(args.a_in, args.a_out)
+        wav2mp3(args.a_in, audio_target)
 
     frames = analyze_video(video_target)
 
