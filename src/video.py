@@ -40,11 +40,34 @@ def analyze_video(filename, subdiv_x=6, subdiv_y=6, plot=False):
         frames.sort(key=lambda x: x[0])
 
         return frames
-    
+
     """
     Divides @frame and @prev_frame into blocks (subdivisions) and calculates the mean of difference of each channel in a block
     Counts the number of blocks where the means of differences of a channel >= @th_subdiv
     If the proportion of the changed blocks >= @th, then @frame is a subshot (returns True)
+
+                                     @frame
+                                 @subdiv_x = 8
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                |  1  |  2  |  3  |  4  |  5  | ... | ... | ... |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                | ... | ... | ... | ... | ... |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                |     |     |     |     |     |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+     @subdiv_y  |     |     |     |     |     |     |     |     |
+        = 8     +-----+-----+-----+-----+-----+-----+-----+-----+
+                |     |     |     |     |     |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                |     |     |     |     |     |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                |     |     |     |     |     |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+                |     |     |     |     |     |     |     |     |
+                +-----+-----+-----+-----+-----+-----+-----+-----+
+
+    ratio = (# of changed blocks) / (total blocks) >= @th: subshot
+    ratio < @th: not a subshot
     """
     def is_subshot(frame, prev_frame, subdiv_x=8, subdiv_y=8, th=0.4, th_subdiv=10, th_must_change=15, blur=False, ksize=(5, 5)):
         h, w, channels = frame.shape[0], frame.shape[1], frame.shape[2]
@@ -98,7 +121,7 @@ def analyze_video(filename, subdiv_x=6, subdiv_y=6, plot=False):
     ret, frame = cap.read()
     if not ret:
         sys.exit()
-    
+
     frame_h = frame.shape[0]
     frame_w = frame.shape[1]
     channels = frame.shape[2]
@@ -116,7 +139,7 @@ def analyze_video(filename, subdiv_x=6, subdiv_y=6, plot=False):
     subshot_frame_index = [0]
     last_subshot = 0
     subshot_min_len = 20
-    
+
     bufsize = 4
     frame_buf = np.empty((bufsize, frame_h, frame_w, channels))
 
@@ -145,7 +168,7 @@ def analyze_video(filename, subdiv_x=6, subdiv_y=6, plot=False):
                 # Deletes subshot if there is only one within a shot
                 if subshot_count == 1:
                     subshot_frame_index.pop()
-                
+
                 shot_frame_index.append(frame_num)
                 print('shot: %d' % frame_num)
                 # print("scene change! at %s"%(frame_num))
