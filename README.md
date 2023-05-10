@@ -12,6 +12,11 @@ contributed by < `beryli`, `NTUT-Vincent`, `haojungc` >
 ## Summary
 This is the final project for CSCI-576 Multimedia Systems Design course at University of Southern California. It is a video player with GUI that analyzes an input video and labels frames with different frame types, `SCENE`, `SHOT`, and `SUBSHOT`. Aside from `Play`, `Pause`, and `Stop`, it also supports random access to each scene, shot, and subshot.
 
+<center><video width="500" height="300" controls>
+  <source src="assets/demo.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video></center>
+
 ## Prerequisites
 ### FFmpeg 6.0
 [FFmpeg 6.0](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
