@@ -12,6 +12,11 @@ contributed by < `beryli`, `NTUT-Vincent`, `haojungc` >
 ## Summary
 This is the final project for CSCI-576 Multimedia Systems Design course at University of Southern California. It is a video player with GUI that analyzes an input video and labels frames with different frame types, `SCENE`, `SHOT`, and `SUBSHOT`. Aside from `Play`, `Pause`, and `Stop`, it also supports random access to each scene, shot, and subshot.
 
+Buttons | Exploration
+:-: | :-:
+<video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/42a327ac-f31c-424a-b008-ba462f45af07' width=180/> | <video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/a677cdb7-fe3e-4461-8dce-67c9dfe82d7a' width=180/>
+
+
 ## Prerequisites
 ### FFmpeg 6.0
 [FFmpeg 6.0](https://ffmpeg.org/download.html) must be installed on your local machine before running the following code.
