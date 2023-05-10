@@ -12,19 +12,9 @@ contributed by < `beryli`, `NTUT-Vincent`, `haojungc` >
 ## Summary
 This is the final project for CSCI-576 Multimedia Systems Design course at University of Southern California. It is a video player with GUI that analyzes an input video and labels frames with different frame types, `SCENE`, `SHOT`, and `SUBSHOT`. Aside from `Play`, `Pause`, and `Stop`, it also supports random access to each scene, shot, and subshot.
 
-<!-- <center><video width="500" height="300" controls>
-  <source src="[assets/demo.mp4](https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/42a327ac-f31c-424a-b008-ba462f45af07)" type="video/mp4">
-Your browser does not support the video tag.
-</video></center> -->
-
-<center>
-<video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/42a327ac-f31c-424a-b008-ba462f45af07' width=250/> | <video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/a677cdb7-fe3e-4461-8dce-67c9dfe82d7a' width=250/>
-</center>
-
-<!-- https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/42a327ac-f31c-424a-b008-ba462f45af07 -->
-<!-- https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/a677cdb7-fe3e-4461-8dce-67c9dfe82d7a -->
-
-
+Buttons | Exploration
+:-: | :-:
+<video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/42a327ac-f31c-424a-b008-ba462f45af07' width=180/> | <video src='https://github.com/beryli/CSCI-576-Final-Project/assets/41893853/a677cdb7-fe3e-4461-8dce-67c9dfe82d7a' width=180/>
 
 
 ## Prerequisites
